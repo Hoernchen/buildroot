@@ -31,7 +31,6 @@ case "$1" in
 	mount configfs -t configfs /sys/kernel/config 2> /dev/null
 
 	mkdir -p $GADGET
-
 	model=`cat /sys/firmware/devicetree/base/model | tr / -`
 
 	serial=`dmesg | grep SPI-NOR-UniqueID`
@@ -44,16 +43,20 @@ case "$1" in
 
 	echo 0x0456 > $GADGET/idVendor
 	echo $USBPID > $GADGET/idProduct
+	echo 0x1337 > $GADGET/bcdDevice
 
 	mkdir -p $GADGET/strings/0x409
 	echo "Analog Devices Inc." > $GADGET/strings/0x409/manufacturer
 	echo $PRODUCT > $GADGET/strings/0x409/product
 	echo $serial > $GADGET/strings/0x409/serialnumber
 
-	mkdir -p $GADGET/functions/ffs.iio_ffs
+#	mkdir -p $GADGET/functions/ffs.iio_ffs
 	mkdir -p $GADGET/functions/acm.usb0
-	mkdir -p $GADGET/functions/rndis.0
+#	mkdir -p $GADGET/functions/rndis.0
 	mkdir -p $GADGET/functions/mass_storage.0
+	
+	modprobe plutousbgadget
+	mkdir -p $GADGET/functions/iiousb2.0
 
 #	echo /opt/vfat.img > $GADGET/functions/mass_storage.0/lun.0/file
 	echo Y > $GADGET/functions/mass_storage.0/lun.0/removable
@@ -61,23 +64,23 @@ case "$1" in
 	host_addr=`echo -n 00:E0:22; echo $sha1 | dd bs=1 count=6 2>/dev/null | hexdump -v -e '/1 ":%01c""%c"'`
 	dev_addr=`echo -n 00:05:F7; echo $sha1 | dd bs=1 count=6 skip=6 2>/dev/null | hexdump -v -e '/1 ":%01c""%c"'`
 
-	echo $host_addr > $GADGET/functions/rndis.0/host_addr
-	echo $dev_addr > $GADGET/functions/rndis.0/dev_addr
+#	echo $host_addr > $GADGET/functions/rndis.0/host_addr
+#	echo $dev_addr > $GADGET/functions/rndis.0/dev_addr
 
 	mkdir -p $GADGET/configs/c.1
 	mkdir -p $GADGET/configs/c.1/strings/0x409
-	echo "RNDIS/MSD/ACM/IIOUSBD" > $GADGET/configs/c.1/strings/0x409/configuration
+#	echo "RNDIS/MSD/ACM/IIOUSBD" > $GADGET/configs/c.1/strings/0x409/configuration
+	echo "MSD/ACM/IIOUSBD" > $GADGET/configs/c.1/strings/0x409/configuration
 	echo 500 > $GADGET/configs/c.1/MaxPower
 
-	ln -s $GADGET/functions/rndis.0 $GADGET/configs/c.1
+#	ln -s $GADGET/functions/rndis.0 $GADGET/configs/c.1
 	ln -s $GADGET/functions/mass_storage.0 $GADGET/configs/c.1
 	ln -s $GADGET/functions/acm.usb0 $GADGET/configs/c.1
-	ln -s $GADGET/functions/ffs.iio_ffs $GADGET/configs/c.1/ffs.iio_ffs
+#	ln -s $GADGET/functions/ffs.iio_ffs $GADGET/configs/c.1/ffs.iio_ffs
+	ln -s $GADGET/functions/iiousb2.0 $GADGET/configs/c.1
 
 	mkdir -p /dev/iio_ffs
 	mount iio_ffs -t functionfs /dev/iio_ffs 2> /dev/null
-
-	start-stop-daemon -S -b -q -m -p /var/run/iiod.pid -x  /usr/sbin/iiod  -- $IIOD_OPTS
 	sleep 0.2
 
 	echo ci_hdrc.0 > $GADGET/UDC
@@ -99,18 +102,18 @@ case "$1" in
 	echo "" > $GADGET/UDC
 	start-stop-daemon -K -q -p /var/run/iiod.pid 2>/dev/null
 
-	rm $GADGET/configs/c.1/rndis.0
+#	rm $GADGET/configs/c.1/rndis.0
 	rm $GADGET/configs/c.1/mass_storage.0
 	rm $GADGET/configs/c.1/acm.usb0
-	rm $GADGET/configs/c.1/ffs.iio_ffs
+#	rm $GADGET/configs/c.1/ffs.iio_ffs
 
 	rmdir $GADGET/strings/0x409
 	rmdir $GADGET/configs/c.1/strings/0x409
 	rmdir $GADGET/configs/c.1
 
-	rmdir $GADGET/functions/ffs.iio_ffs
+#	rmdir $GADGET/functions/ffs.iio_ffs
 	#rmdir $GADGET/functions/acm.usb0
-	rmdir $GADGET/functions/rndis.0
+#	rmdir $GADGET/functions/rndis.0
 	rmdir $GADGET/functions/mass_storage.0
 
 	rmdir $GADGET 2> /dev/null

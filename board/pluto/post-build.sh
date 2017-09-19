@@ -7,7 +7,8 @@ INSTALL=install
 # Add a console on tty1
 grep -qE '^ttyGS0::' ${TARGET_DIR}/etc/inittab || \
 sed -i '/GENERIC_SERIAL/a\
-ttyGS0::respawn:/sbin/getty -L ttyGS0 0 vt100 # USB console' ${TARGET_DIR}/etc/inittab
+ttyGS0::respawn:/sbin/getty -L ttyGS0 0 vt100 -n -l /bin/sh # USB console' ${TARGET_DIR}/etc/inittab
+#ttyGS0::respawn:/sbin/getty -L ttyGS0 0 vt100 # USB console' ${TARGET_DIR}/etc/inittab
 
 grep -qE '^::sysinit:/bin/mount -t debugfs' ${TARGET_DIR}/etc/inittab || \
 sed -i '/hostname/a\

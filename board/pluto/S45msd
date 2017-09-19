@@ -9,8 +9,8 @@ patch_html_page() {
 	LINUX=`uname -a | tr / -`
 	MODEL=`cat /sys/firmware/devicetree/base/model | tr / -`
 	SERIAL=`cat /sys/kernel/config/usb_gadget/composite_gadget/strings/0x409/serialnumber`
-	MACHOST=`cat /sys/kernel/config/usb_gadget/composite_gadget/functions/rndis.0/host_addr`
-	MAC=`cat /sys/kernel/config/usb_gadget/composite_gadget/functions/rndis.0/dev_addr`
+	MACHOST="00:E0:22:11:11:11:" #`cat /sys/kernel/config/usb_gadget/composite_gadget/functions/rndis.0/host_addr`
+	MAC="00:E0:22:11:11:11:" #`cat /sys/kernel/config/usb_gadget/composite_gadget/functions/rndis.0/dev_addr`
 	IIO=`iio_info 2>/dev/null | grep "Library version:"`
 	BUILD=`grep device-fw /opt/VERSIONS | cut -d ' ' -f 2`
 	FPGA=`grep hdl /opt/VERSIONS | cut -d ' ' -f 2`
